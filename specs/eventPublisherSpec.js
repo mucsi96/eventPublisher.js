@@ -109,6 +109,15 @@ describe(
                 expect(mySpy).not.toHaveBeenCalled();
             });
 
+            it('should be synchronous if forced', function () {
+                var eventName = 'testEvent',
+                    mySpy = jasmine.createSpy('mySpy').and.callFake(resolver);
+
+                ep.subscribe(eventName, MODULES.CHARLIE, mySpy);
+                ep.publish(eventName, MODULES.CHARLIE, {}, true);
+                expect(mySpy).toHaveBeenCalled();
+            });
+
             it('should pass moduleName to event handler', function (done) {
                 var eventName = 'testEventName',
                     mySpy = jasmine.createSpy('mySpy').and.callFake(resolver);

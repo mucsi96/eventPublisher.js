@@ -6,7 +6,7 @@
 var EventPublisher = function () {
     var eventHandlers = {};
 
-    function publishEvents(moduleName, eventName, data) {
+    function publishEvents(moduleName, eventName, data, forceSync) {
         var listeners,
             i,
             len,
@@ -31,7 +31,12 @@ var EventPublisher = function () {
                 if (typeof listeners[i] === "function") {
                     deferred = $.Deferred();
                     promises.push(deferred.promise());
-                    setTimeout(handler(i, moduleName, eventName, deferred, data), 0);
+                    if (!forceSync) {
+                        setTimeout(handler(i, moduleName, eventName, deferred, data), 0);
+                    } else {
+                        handler(i, moduleName, eventName, deferred, data)();
+                    }
+
                 }
             }
         }
@@ -44,13 +49,14 @@ var EventPublisher = function () {
      * @param {string} eventName events name
      * @param {string} moduleName module name
      * @param {object} data data object passed to event handlers on .data path
+     * @param {boolean} forceSync forces synchronous event publishing
      * @returns {object} jQuery promise
      */
-    function publish(eventName, moduleName, data) {
+    function publish(eventName, moduleName, data, forceSync) {
         var promises = [];
-        promises = promises.concat(publishEvents(moduleName, eventName, data));
-        promises = promises.concat(publishEvents(null, eventName, data));
-        promises = promises.concat(publishEvents(moduleName, null, data));
+        promises = promises.concat(publishEvents(moduleName, eventName, data, forceSync));
+        promises = promises.concat(publishEvents(null, eventName, data, forceSync));
+        promises = promises.concat(publishEvents(moduleName, null, data, forceSync));
 
         return $.when.apply(this, promises);
     }
